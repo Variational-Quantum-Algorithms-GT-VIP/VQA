@@ -26,3 +26,6 @@ sympy
 typing_extensions
 tzdata
 pylatexenc
+qiskit_algorithms
+plotly
+nbformat
