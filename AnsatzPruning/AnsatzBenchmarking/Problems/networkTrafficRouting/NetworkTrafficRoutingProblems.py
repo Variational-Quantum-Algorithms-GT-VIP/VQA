@@ -318,14 +318,6 @@ class NetworkTrafficRoutingProblemSet(ProblemSet):
 
     def createProblemSets(self) -> list[tuple[SparsePauliOp, float]]:
 
-        #graphs = [
-        #    problem1(),
-        #    problem2(),
-        #    problem3(),
-        #    problem4(),
-        #    problem5()
-        #]
-
         graphs = [
             problem1(),
             problem2(),

@@ -4,7 +4,8 @@ from qiskit.quantum_info import SparsePauliOp, Pauli
 
 def buildNetworkTrafficRoutingHamiltonian(
     graph: nx.Graph,
-    paths: list[list[tuple[int, int]]]
+    paths: list[list[tuple[int, int]]],
+    penalty: float = 10.0
 ) -> SparsePauliOp:
     """
     Build congestion-aware Network Traffic Routing Hamiltonian.
@@ -81,6 +82,29 @@ def buildNetworkTrafficRoutingHamiltonian(
                 z_pq[numQubits - 1 - p] = "Z"
                 z_pq[numQubits - 1 - q] = "Z"
                 pauliTerms.append((Pauli("".join(z_pq)), coeff))
+
+    # Flow-conservation penalty: enforce exactly one path selected
+    # sum_p x_p = numQubits/2 * I - (1/2) * sum_p Z_p
+    # (sum_p x_p - 1) = (numQubits/2 - 1) * I - (1/2) * sum_p Z_p
+    const = numQubits / 2 - 1
+
+    # Identity part: const^2
+    pauliTerms.append((Pauli("I" * numQubits), penalty * const ** 2))
+
+    # Cross term: 2 * const * (-1/2) * sum_p Z_p = -const * sum_p Z_p
+    for p in range(numQubits):
+        z_p = ["I"] * numQubits
+        z_p[numQubits - 1 - p] = "Z"
+        pauliTerms.append((Pauli("".join(z_p)), -penalty * const))
+
+    # Squared term: (1/4) * (sum_p Z_p)^2 = (1/4)(numQubits*I + 2*sum_{p<q} Z_p Z_q)
+    pauliTerms.append((Pauli("I" * numQubits), penalty * numQubits / 4))
+    for p in range(numQubits):
+        for q in range(p + 1, numQubits):
+            z_pq = ["I"] * numQubits
+            z_pq[numQubits - 1 - p] = "Z"
+            z_pq[numQubits - 1 - q] = "Z"
+            pauliTerms.append((Pauli("".join(z_pq)), penalty / 2))
 
     if not pauliTerms:
         return SparsePauliOp(Pauli("I"), 0)
