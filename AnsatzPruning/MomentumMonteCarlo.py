@@ -27,8 +27,11 @@ def momentum_sa_phased(params:list, inds:list, ansatz:QuantumCircuit,
     Ansatz optimization pipeline that first runs MomentumBuilder and then optimizes 
     the parameters using Monte Carlo optimization method.
     """
-    observables = [*hamiltonian.paulis, hamiltonian]
-    
+    #previously observing all pauli terms -> causing unnecessary ev calculations
+    #observables = [*hamiltonian.paulis, hamiltonian]
+    #now observing only hamiltonian -> improved performance
+    observables = [hamiltonian]
+
     # Run MomentumBuilder
     # print("Running MomentumBuilder")
     optimized_ansatz = MomentumBuilder.MomentumBuilder(
@@ -96,7 +99,10 @@ def momentum_sa_merged(params:list, inds:list, ansatz:QuantumCircuit,
     momentum and optimizes the layer's parameters using simulated annealing.
     """
     num_qubits = circuit.num_qubits
-    observables = [*hamiltonian.paulis, hamiltonian]
+    #previously observing all pauli terms -> causing unnecessary ev calculations
+    #observables = [*hamiltonian.paulis, hamiltonian]
+    #now observing only hamiltonian -> improved performance
+    observables = [hamiltonian]
     M = np.zeros((len(params))) # Momentum
     currCirc = QuantumCircuit(num_qubits)
     currCirc = currCirc.compose(ansatz)
