@@ -17,7 +17,7 @@ from qiskit.transpiler import BackendEstimatorV2
 from scipy.optimize import minimize, differential_evolution
 from qiskit_aer.aerprovider import AerSimulator
 
-from Utilities import cost_func as utilities_cost_func, to_isa_pub
+from Utilities import cost_func as utilities_cost_func
 from QAdaPrune import QAdaPruner, QAdaPrunedCircuit, calculate_parameter_gradients
 
 
