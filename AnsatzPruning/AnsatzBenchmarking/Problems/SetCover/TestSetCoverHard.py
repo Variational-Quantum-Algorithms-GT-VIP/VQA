@@ -9,7 +9,7 @@ from qiskit.circuit import Parameter
 from qiskit.primitives import StatevectorEstimator as Estimator
 from qiskit_aer import AerSimulator
 from SetCoverHamiltonian import get_subset_Hamiltonian
-from AnsatzPruning import MomentumMonteCarlo
+from AnsatzPruning.Builders import MomentumMonteCarlo
 
 def test_set_cover_hard():
     """

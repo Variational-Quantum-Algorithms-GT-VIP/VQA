@@ -2,7 +2,7 @@ import pandas as pd
 
 from AnsatzBenchmarking.Problems.maxCut.MaxCutProblems import MaxCutProblemSet
 from AnsatzBenchmarking.Builders.fixedSU2 import FixedSU2Builder
-from AnsatzBenchmarking.Builders.evolvedOp import EvolvedOperatorBuilder
+from AnsatzPruning.Builders.evolvedOp import EvolvedOperatorBuilder
 
 from AnsatzBenchmarking.Builders.momentumBuilder import MomentumBuilder
 from AnsatzBenchmarking.evaluator import evaluateBuilder

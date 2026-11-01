@@ -12,9 +12,9 @@ from qiskit.quantum_info import SparsePauliOp
 from qiskit.primitives import StatevectorEstimator as Estimator
 from qiskit_aer.aerprovider import AerSimulator
 from Optimization import MonteCarlo
-from AnsatzPruning import MomentumBuilder
 from AnsatzPruning.Utilities import cost_func
 from qiskit.circuit import Parameter
+import MomentumBuilder
 from MomentumBuilder import momen_layer
 from Utilities import *
 
