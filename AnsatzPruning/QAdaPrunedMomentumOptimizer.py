@@ -17,7 +17,7 @@ from qiskit.transpiler import BackendEstimatorV2
 from scipy.optimize import minimize, differential_evolution
 from qiskit_aer.aerprovider import AerSimulator
 
-from Utilities import to_isa_pub
+from Utilities import cost_func as utilities_cost_func, to_isa_pub
 from QAdaPrune import QAdaPruner, QAdaPrunedCircuit, calculate_parameter_gradients
 
 
@@ -134,11 +134,10 @@ class QAdaPrunedMomentumOptimizer:
     def _cost_function(self, params: np.ndarray) -> float:
         if len(params) == 0:
             return 0.0
-        if self.pass_manager is None:
-            pub = (self.pruned_circuit.full_circuit, self.hamiltonian, params)
-        else:
-            pub = to_isa_pub(self.pruned_circuit.full_circuit, self.hamiltonian, params, self.pass_manager, self.isa_cache)
-        cost = self.estimator.run([pub]).result()[0].data.evs
+        cost = utilities_cost_func(params, self.pruned_circuit.full_circuit, self.hamiltonian,
+                                   self.estimator, self.pass_manager, self.isa_cache)
+        if hasattr(cost, "__len__") or isinstance(cost, np.ndarray):
+            return float(np.ravel(cost)[-1])
         return float(cost)
     
     def _optimize_layer_params(self, initial_params: np.ndarray,
