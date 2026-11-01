@@ -3,7 +3,11 @@ import numpy as np
 import math
 import sys
 import os
+from qiskit.primitives import BackendEstimatorV2
+from qiskit.primitives import StatevectorEstimator as Estimator
 from qiskit.quantum_info import *
+from qiskit.transpiler import StagedPassManager
+from typing import overload
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 if parent_dir not in sys.path:
@@ -11,8 +15,20 @@ if parent_dir not in sys.path:
 from AnsatzPruning.Utilities import cost_func as utilities_cost_func
 
 # Simulated Annealing optimization
-def simulated_annealing(runs, params, ansatz, simulator, observables=None, estimator=None):
-    prev_E = cost_func(params, ansatz, simulator, observables, estimator)
+@overload
+def simulated_annealing(runs, params, ansatz, simulator): ...
+
+@overload
+def simulated_annealing(runs, params, ansatz, simulator, observables, estimator:Estimator): ...
+
+@overload
+def simulated_annealing(runs, params, ansatz, simulator, observables, estimator:BackendEstimatorV2, pass_manager:StagedPassManager, isa_cache=None): ...
+
+def simulated_annealing(runs, params, ansatz, simulator, observables=None, estimator=None, pass_manager=None, isa_cache=None):
+    if pass_manager is None:
+        prev_E = cost_func(params, ansatz, simulator, observables, estimator)
+    else:
+        prev_E = cost_func(params, ansatz, simulator, observables, estimator, pass_manager, isa_cache)
     best_params = params.copy()
     best_E = prev_E
 
@@ -26,7 +42,10 @@ def simulated_annealing(runs, params, ansatz, simulator, observables=None, estim
     for t in range(1, runs):
         delta = np.random.normal(0, 0.1, len(params))
         params_new = params + delta
-        E_new = cost_func(params_new, ansatz, simulator, observables, estimator)
+        if pass_manager is None:
+            E_new = cost_func(params_new, ansatz, simulator, observables, estimator)
+        else:
+            E_new = cost_func(params_new, ansatz, simulator, observables, estimator, pass_manager, isa_cache)
         delta_E = E_new - prev_E
 
         if delta_E <= 0:
@@ -164,10 +183,13 @@ def stochastic_hill_climbing(runs, params, ansatz, simulator, observables=None, 
     return best_state
 
 # Function to calculate cost based on parameters
-def cost_func(params, ansatz, simulator, observables=None, estimator=None):
+def cost_func(params, ansatz, simulator, observables=None, estimator=None, pass_manager=None, isa_cache=None):
     # If observables and estimator are provided, use cost_func from Utilities
     if observables is not None and estimator is not None:
-        cost = utilities_cost_func(params, ansatz, observables, estimator)
+        if pass_manager is None:
+            cost = utilities_cost_func(params, ansatz, observables, estimator)
+        else:
+            cost = utilities_cost_func(params, ansatz, observables, estimator, pass_manager, isa_cache)
         if isinstance(cost, np.ndarray):
             return cost[-1].item() if len(cost) > 0 else cost.item()
         else:
