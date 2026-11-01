@@ -13,8 +13,13 @@ from dataclasses import dataclass
 from typing import List, Tuple, Dict, Optional
 from qiskit.circuit import QuantumCircuit, ParameterVector, Parameter
 from qiskit.quantum_info import SparsePauliOp
+from qiskit.primitives import BackendEstimatorV2 as BackendEstimator
 from qiskit.primitives import StatevectorEstimator as Estimator
+from qiskit.transpiler import StagedPassManager as PassManager
 from scipy.optimize import minimize
+from typing import overload
+
+from Utilities import to_isa_pub
 
 
 @dataclass
@@ -302,11 +307,29 @@ class QAdaPrunedCircuit:
         return len(self.active_param_ids)
 
 
+@overload
 def calculate_parameter_gradients(params: np.ndarray,
                                   circuit: QuantumCircuit,
                                   hamiltonian: SparsePauliOp,
                                   estimator: Estimator,
-                                  delta: float = np.pi / 2) -> np.ndarray:
+                                  delta: float = np.pi / 2) -> np.ndarray: ...
+
+@overload
+def calculate_parameter_gradients(params: np.ndarray,
+                                  circuit: QuantumCircuit,
+                                  hamiltonian: SparsePauliOp,
+                                  estimator: BackendEstimator,
+                                  pass_manager: PassManager,
+                                  isa_cache: dict,
+                                  delta: float = np.pi / 2) -> np.ndarray: ...
+
+def calculate_parameter_gradients(params: np.ndarray,
+                                  circuit: QuantumCircuit,
+                                  hamiltonian: SparsePauliOp,
+                                  estimator: Estimator | BackendEstimator,
+                                  delta: float = np.pi / 2,
+                                  pass_manager = None,
+                                  isa_cache = None) -> np.ndarray:
     """
     Calculate gradients for all parameters using parameter shift rule.
 
@@ -314,8 +337,10 @@ def calculate_parameter_gradients(params: np.ndarray,
         params: Current parameter values
         circuit: Quantum circuit
         hamiltonian: Hamiltonian to minimize
-        estimator: Estimator for expectation values
+        estimator: StatevectorEstimator | BackendEstimatorV2 for expectation values
         delta: Shift amount for parameter-shift rule
+        pass_manager: StagedPassManager (for BackendEstimatorV2 only)
+        isa_cache: dict (for BackendEstimatorV2 only)
 
     Returns:
         Gradient vector
@@ -332,8 +357,12 @@ def calculate_parameter_gradients(params: np.ndarray,
         params_minus[i] -= delta
 
         # Compute expectations
-        pub_plus = (circuit, hamiltonian, params_plus)
-        pub_minus = (circuit, hamiltonian, params_minus)
+        if pass_manager is None:
+            pub_plus = (circuit, hamiltonian, params_plus)
+            pub_minus = (circuit, hamiltonian, params_minus)
+        else:
+            pub_plus = to_isa_pub(circuit, hamiltonian, params_plus, pass_manager, isa_cache)
+            pub_minus = to_isa_pub(circuit, hamiltonian, params_minus, pass_manager, isa_cache)
 
         try:
             cost_plus = estimator.run([pub_plus]).result()[0].data.evs[-1]
