@@ -6,16 +6,18 @@ Combines QAdaPrune parameter pruning with Momentum-based layer addition and Mont
 import numpy as np
 import heapq
 import time
-from typing import Tuple, List, Optional, Dict
+from typing import Tuple, List, Optional, Dict, overload
 from dataclasses import dataclass
 
 from qiskit import QuantumCircuit
 from qiskit.circuit import ParameterVector, Parameter
 from qiskit.quantum_info import SparsePauliOp
 from qiskit.primitives import StatevectorEstimator as Estimator
+from qiskit.primitives import BackendEstimatorV2
 from scipy.optimize import minimize, differential_evolution
 from qiskit_aer.aerprovider import AerSimulator
 
+from Utilities import cost_func as utilities_cost_func
 from QAdaPrune import QAdaPruner, QAdaPrunedCircuit, calculate_parameter_gradients
 
 
@@ -71,9 +73,19 @@ class QAdaPrunedMomentumOptimizer:
     """
     Main optimizer combining QAdaPrune with Momentum-based layer addition.
     """
+
+    @overload
+    def __init__(self, circuit: QuantumCircuit, hamiltonian: SparsePauliOp,
+                estimator: Estimator, config: OptimizationConfig = None): ...
+
+    @overload
+    def __init__(self, circuit: QuantumCircuit, hamiltonian: SparsePauliOp,
+                 estimator: BackendEstimatorV2, config: OptimizationConfig = None,
+                 pass_manager = None, isa_cache = None): ...
     
     def __init__(self, circuit: QuantumCircuit, hamiltonian: SparsePauliOp,
-                 estimator: Estimator, config: OptimizationConfig = None):
+                 estimator: Estimator | BackendEstimatorV2, config: OptimizationConfig = None,
+                 pass_manager = None, isa_cache = None):
         """
         Args:
             circuit: Base quantum circuit (usually just qubits)
@@ -85,6 +97,8 @@ class QAdaPrunedMomentumOptimizer:
         self.hamiltonian = hamiltonian
         self.estimator = estimator
         self.config = config or OptimizationConfig()
+        self.pass_manager = pass_manager
+        self.isa_cache = isa_cache
         
         self.num_qubits = circuit.num_qubits
         self.observables = [*hamiltonian.paulis, hamiltonian]
@@ -120,8 +134,10 @@ class QAdaPrunedMomentumOptimizer:
     def _cost_function(self, params: np.ndarray) -> float:
         if len(params) == 0:
             return 0.0
-        pub = (self.pruned_circuit.full_circuit, self.hamiltonian, params)
-        cost = self.estimator.run([pub]).result()[0].data.evs
+        cost = utilities_cost_func(params, self.pruned_circuit.full_circuit, self.hamiltonian,
+                                   self.estimator, self.pass_manager, self.isa_cache)
+        if hasattr(cost, "__len__") or isinstance(cost, np.ndarray):
+            return float(np.ravel(cost)[-1])
         return float(cost)
     
     def _optimize_layer_params(self, initial_params: np.ndarray,
@@ -299,10 +315,26 @@ class QAdaPrunedMomentumOptimizer:
         return results
 
 
+@overload
 def compare_ansatze(base_circuit: QuantumCircuit,
                     hamiltonian: SparsePauliOp,
                     estimator: Estimator,
-                    num_runs: int = 5) -> Dict:
+                    num_runs: int = 5) -> Dict: ...
+
+@overload
+def compare_ansatze(base_circuit: QuantumCircuit,
+                    hamiltonian: SparsePauliOp,
+                    estimator: BackendEstimatorV2,
+                    num_runs: int = 5,
+                    pass_manager = None,
+                    isa_cache = None) -> Dict: ...
+
+def compare_ansatze(base_circuit: QuantumCircuit,
+                    hamiltonian: SparsePauliOp,
+                    estimator: Estimator | BackendEstimatorV2,
+                    num_runs: int = 5,
+                    pass_manager = None,
+                    isa_cache = None) -> Dict:
     """
     Compare QAdaPrune approach vs standard approaches.
     
@@ -327,7 +359,9 @@ def compare_ansatze(base_circuit: QuantumCircuit,
             base_circuit.copy(),
             hamiltonian,
             estimator,
-            config
+            config,
+            pass_manager,
+            isa_cache
         )
         qadaprune_results = optimizer.optimize(verbose=False)
         results['qadaprune'].append(qadaprune_results)
