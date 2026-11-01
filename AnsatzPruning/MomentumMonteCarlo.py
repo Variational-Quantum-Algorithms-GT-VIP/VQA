@@ -18,7 +18,7 @@ from qiskit.circuit import Parameter
 from MomentumBuilder import momen_layer
 from Utilities import *
 
-
+# Phased Integration
 def momentum_sa_phased(params:list, inds:list, ansatz:QuantumCircuit,
                          circuit:QuantumCircuit, hamiltonian:SparsePauliOp,
                          estimator:Estimator, beta1:float, beta2:float,
@@ -87,6 +87,7 @@ def momentum_sa_phased(params:list, inds:list, ansatz:QuantumCircuit,
     
     return optimized_ansatz, optimized_params, energy_final
 
+# Merged / Incorporated Integration
 def momentum_sa_merged(params:list, inds:list, ansatz:QuantumCircuit,
                          circuit:QuantumCircuit, hamiltonian:SparsePauliOp,
                          estimator:Estimator, beta1:float, beta2:float,
