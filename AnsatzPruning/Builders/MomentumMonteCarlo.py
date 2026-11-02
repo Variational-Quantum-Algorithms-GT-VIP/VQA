@@ -10,6 +10,8 @@ from qiskit import QuantumCircuit
 from qiskit_aer.aerprovider import AerSimulator
 from qiskit.circuit import Parameter
 from qiskit.primitives import StatevectorEstimator as Estimator
+from qiskit.primitives import BackendEstimatorV2 as BackendEstimator
+from qiskit.transpiler import StagedPassManager as PassManager
 from qiskit.quantum_info import SparsePauliOp
 from typing import overload
 
@@ -98,9 +100,9 @@ def momentum_sa_merged(params:list, inds:list, ansatz:QuantumCircuit,
 @overload
 def momentum_sa_merged(params:list, inds:list, ansatz:QuantumCircuit,
                          circuit:QuantumCircuit, hamiltonian:SparsePauliOp,
-                         estimator:BackendEstimatorV2, beta1:float, beta2:float,
+                         estimator:BackendEstimator, beta1:float, beta2:float,
                          iters:int=2, optimization_runs:int=100,
-                         pass_manager:StagedPassManager=None, isa_cache=None): ...
+                         pass_manager:PassManager=None, isa_cache=None): ...
 
 def momentum_sa_merged(params:list, inds:list, ansatz:QuantumCircuit,
                          circuit:QuantumCircuit, hamiltonian:SparsePauliOp,

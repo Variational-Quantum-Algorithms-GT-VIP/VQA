@@ -13,7 +13,7 @@ from qiskit import QuantumCircuit
 from qiskit.circuit import ParameterVector, Parameter
 from qiskit.quantum_info import SparsePauliOp
 from qiskit.primitives import StatevectorEstimator as Estimator
-from qiskit.transpiler import BackendEstimatorV2
+from qiskit.primitives import BackendEstimatorV2
 from scipy.optimize import minimize, differential_evolution
 from qiskit_aer.aerprovider import AerSimulator
 
