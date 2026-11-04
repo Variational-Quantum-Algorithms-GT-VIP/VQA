@@ -246,7 +246,7 @@ def problem9():
 
 def problem10():
     G = nx.Graph()
-    #32 qubit example - K7 graph with equal weights
+    #20 qubit example - K7 graph with equal weights
     G.add_edge(0, 1, weight=1.0)
     G.add_edge(0, 2, weight=1.0)
     G.add_edge(0, 3, weight=1.0)
@@ -326,9 +326,9 @@ class NetworkTrafficRoutingProblemSet(ProblemSet):
             problem5(),
             problem6(),
             problem7(),
-            problem8(),
-            problem9(),
-            problem10()
+            #problem8(),
+            #problem9(),
+            #problem10()
         ]
 
         problems = [(None, None)] * len(graphs)

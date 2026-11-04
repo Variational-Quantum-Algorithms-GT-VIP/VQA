@@ -5,7 +5,7 @@ from qiskit.quantum_info import SparsePauliOp, Pauli
 def buildNetworkTrafficRoutingHamiltonian(
     graph: nx.Graph,
     paths: list[list[tuple[int, int]]],
-    penalty: float = 10.0
+    penalty: float = 20.0
 ) -> SparsePauliOp:
     """
     Build congestion-aware Network Traffic Routing Hamiltonian.
