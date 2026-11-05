@@ -15,9 +15,9 @@ from qiskit.transpiler import StagedPassManager as PassManager
 from qiskit.quantum_info import SparsePauliOp
 from typing import overload
 
-from AnsatzPruning import MomentumBuilder
-from AnsatzPruning.Utilities import cost_func
-from MomentumBuilder import momen_layer
+from Builders import MomentumBuilder
+from Utilities import cost_func
+from Builders.MomentumBuilder import momen_layer
 from Optimization import MonteCarlo
 from Utilities import *
 
