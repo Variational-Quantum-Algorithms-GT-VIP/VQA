@@ -338,8 +338,10 @@ def calculate_parameter_gradients(params: np.ndarray,
         try:
             cost_plus = estimator.run([pub_plus]).result()[0].data.evs[-1]
             cost_minus = estimator.run([pub_minus]).result()[0].data.evs[-1]
-            gradients[i] = (cost_plus - cost_minus) / (2 * delta)
         except:
-            gradients[i] = 0.0
+            cost_plus = float(estimator.run([pub_plus]).result()[0].data.evs)
+            cost_minus = float(estimator.run([pub_minus]).result()[0].data.evs)
+
+        gradients[i] = (cost_plus - cost_minus) / (2 * delta)
 
     return gradients
