@@ -320,7 +320,7 @@ def compare_ansatze(base_circuit: QuantumCircuit,
         # QAdaPrune + Momentum
         config = OptimizationConfig(
             max_layers=5,
-            pruning_threshold=0.01,
+            pruning_threshold=0.00,
             optimization_method='cobyla'
         )
         optimizer = QAdaPrunedMomentumOptimizer(
