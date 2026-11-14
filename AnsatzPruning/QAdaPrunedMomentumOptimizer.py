@@ -104,7 +104,8 @@ class QAdaPrunedMomentumOptimizer:
         
         # Circuit tracking
         self.pruned_circuit = QAdaPrunedCircuit(circuit, self.pruner)
-        self.current_params = np.array([])
+        self.full_params = np.array([], dtype=float)
+        self.active_mask = np.array([], dtype=bool)
         self.layer_count = 0
         
         # Statistics
@@ -116,11 +117,19 @@ class QAdaPrunedMomentumOptimizer:
             'layer_times': [],
             'gradients': []
         }
-    
-    def _cost_function(self, params: np.ndarray) -> float:
-        if len(params) == 0:
+
+    def current_params(self):
+        return self.full_params[self.active_mask]
+
+    def _expand(self, active_vals):
+        full = self.full_params.copy()
+        full[self.active_mask] = active_vals
+        return full
+
+    def _cost_function(self, active_vals: np.ndarray) -> float:
+        if len(active_vals) == 0:
             return 0.0
-        pub = (self.pruned_circuit.full_circuit, self.hamiltonian, params)
+        pub = (self.pruned_circuit.full_circuit, self.hamiltonian, self._expand(active_vals))
         cost = self.estimator.run([pub]).result()[0].data.evs
         return float(cost)
     
@@ -192,18 +201,21 @@ class QAdaPrunedMomentumOptimizer:
         # Initialize new parameters
         new_param_count = len(active_qubits)
         new_params = np.ones(new_param_count) * np.pi / 4
-        self.current_params = np.concatenate([self.current_params, new_params])
+        self.full_params = np.concatenate([self.full_params, new_params])
+        self.active_mask = np.concatenate([self.active_mask, np.ones(new_param_count, dtype=bool)])
         
         # Optimize this layer's parameters
-        self.current_params = self._optimize_layer_params(self.current_params)
+        opt = self._optimize_layer_params(self.full_params[self.active_mask])
+        self.full_params[self.active_mask] = opt
         
         # Calculate cost and gradients
-        cost = self._cost_function(self.current_params)
+        cost = self._cost_function(opt)
         gradients = calculate_parameter_gradients(
-            self.current_params,
+            self.full_params,
             self.pruned_circuit.full_circuit,
             self.hamiltonian,
-            self.estimator
+            self.estimator,
+            self.active_mask
         )
         
         # Update pruner with gradients
@@ -215,9 +227,10 @@ class QAdaPrunedMomentumOptimizer:
         
         if candidates:
             print(f"  → Pruning {len(candidates)} parameters")
-            self.current_params, pruned = self.pruner.prune_parameters(
-                candidates, self.current_params
+            pruned = self.pruner.prune_parameters(
+                candidates, self.full_params
             )
+            self.active_mask[pruned] = False
             self.pruned_circuit.remove_pruned_gates(pruned)
         
         # Update iteration and history
@@ -225,7 +238,7 @@ class QAdaPrunedMomentumOptimizer:
         
         layer_time = time.time() - layer_start_time
         self.history['costs'].append(cost)
-        self.history['param_counts'].append(len(self.current_params))
+        self.history['param_counts'].append(self.active_mask.sum())
         self.history['pruned_counts'].append(self.pruner.pruned_count)
         self.history['layer_sizes'].append(new_param_count)
         self.history['layer_times'].append(layer_time)
@@ -251,7 +264,7 @@ class QAdaPrunedMomentumOptimizer:
         for layer_idx in range(self.config.max_layers):
             if verbose:
                 print(f"\n[Layer {layer_idx}]")
-                print(f"  Current parameters: {len(self.current_params)}")
+                print(f"  Current parameters: {int(self.active_mask.sum())}")
                 print(f"  Total pruned: {self.pruner.pruned_count}")
             
             # Add and optimize layer
@@ -275,10 +288,10 @@ class QAdaPrunedMomentumOptimizer:
         # Prepare results
         results = {
             'optimized_circuit': self.pruned_circuit.full_circuit,
-            'optimized_params': self.current_params,
+            'optimized_params': self.full_params.copy(),
             'final_cost': self.history['costs'][-1] if self.history['costs'] else None,
             'num_layers': self.layer_count,
-            'num_parameters': len(self.current_params),
+            'num_parameters': int(self.active_mask.sum()),
             'pruned_parameters': self.pruner.pruned_count,
             'total_time': total_time,
             'history': self.history,
