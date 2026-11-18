@@ -159,7 +159,7 @@ class QAdaPruner:
         return candidates
 
     def prune_parameters(self, candidates: List[int],
-                         param_values: np.ndarray) -> Tuple[np.ndarray, List[int]]:
+                         full_params: np.ndarray) -> Tuple[np.ndarray, List[int]]:
         """
         Prune identified low-importance parameters.
 
@@ -168,7 +168,7 @@ class QAdaPruner:
             - List of pruned parameter IDs
         """
         if not candidates:
-            return param_values, []
+            return full_params, []
 
         pruned = []
         for param_id in candidates:
@@ -177,17 +177,11 @@ class QAdaPruner:
                 if not metrics.is_pruned:
                     metrics.is_pruned = True
                     metrics.pruning_iteration = self.iteration
-                    metrics.frozen_value = param_values[param_id] if param_id < len(
-                        param_values) else 0.0
+                    metrics.frozen_value = float(full_params[param_id])
                     pruned.append(param_id)
                     self.pruned_count += 1
 
-        # Create mapping of old param indices to new indices
-        active_indices = [i for i in range(len(param_values))
-                          if i not in pruned]
-        new_param_values = param_values[active_indices]
-
-        return new_param_values, pruned
+        return pruned
 
     def update_iteration(self, cost_value: float):
         """Update iteration counter and track cost evolution"""
@@ -312,24 +306,8 @@ def calculate_parameter_gradients(params: np.ndarray,
                                   circuit: QuantumCircuit,
                                   hamiltonian: SparsePauliOp,
                                   estimator: Estimator,
-                                  delta: float = np.pi / 2) -> np.ndarray: ...
-
-@overload
-def calculate_parameter_gradients(params: np.ndarray,
-                                  circuit: QuantumCircuit,
-                                  hamiltonian: SparsePauliOp,
-                                  estimator: BackendEstimator,
-                                  pass_manager: PassManager,
-                                  isa_cache: dict,
-                                  delta: float = np.pi / 2) -> np.ndarray: ...
-
-def calculate_parameter_gradients(params: np.ndarray,
-                                  circuit: QuantumCircuit,
-                                  hamiltonian: SparsePauliOp,
-                                  estimator: Estimator | BackendEstimator,
-                                  delta: float = np.pi / 2,
-                                  pass_manager = None,
-                                  isa_cache = None) -> np.ndarray:
+                                  active_mask: np.ndarray,
+                                  delta: float = np.pi / 2) -> np.ndarray:
     """
     Calculate gradients for all parameters using parameter shift rule.
 
@@ -348,6 +326,9 @@ def calculate_parameter_gradients(params: np.ndarray,
     gradients = np.zeros_like(params)
 
     for i in range(len(params)):
+        if not active_mask[i]:
+            continue
+
         # Forward shift
         params_plus = params.copy()
         params_plus[i] += delta
@@ -367,8 +348,10 @@ def calculate_parameter_gradients(params: np.ndarray,
         try:
             cost_plus = estimator.run([pub_plus]).result()[0].data.evs[-1]
             cost_minus = estimator.run([pub_minus]).result()[0].data.evs[-1]
-            gradients[i] = (cost_plus - cost_minus) / (2 * delta)
         except:
-            gradients[i] = 0.0
+            cost_plus = float(estimator.run([pub_plus]).result()[0].data.evs)
+            cost_minus = float(estimator.run([pub_minus]).result()[0].data.evs)
+
+        gradients[i] = (cost_plus - cost_minus) / (2 * delta)
 
     return gradients
