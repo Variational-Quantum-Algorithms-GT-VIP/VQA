@@ -5,20 +5,23 @@ import heapq
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np
 import math
-import matplotlib
 import matplotlib.pyplot as plt
 from qiskit import QuantumCircuit
-from qiskit.quantum_info import SparsePauliOp
-from qiskit.primitives import StatevectorEstimator as Estimator
 from qiskit_aer.aerprovider import AerSimulator
-from Optimization import MonteCarlo
+from qiskit.circuit import Parameter
+from qiskit.primitives import StatevectorEstimator as Estimator
+from qiskit.primitives import BackendEstimatorV2 as BackendEstimator
+from qiskit.transpiler import StagedPassManager as PassManager
+from qiskit.quantum_info import SparsePauliOp
+from typing import overload
+
 from AnsatzPruning import MomentumBuilder
 from AnsatzPruning.Utilities import cost_func
-from qiskit.circuit import Parameter
 from MomentumBuilder import momen_layer
+from Optimization import MonteCarlo
 from Utilities import *
 
-
+# Phased Integration
 def momentum_sa_phased(params:list, inds:list, ansatz:QuantumCircuit,
                          circuit:QuantumCircuit, hamiltonian:SparsePauliOp,
                          estimator:Estimator, beta1:float, beta2:float,
@@ -27,8 +30,11 @@ def momentum_sa_phased(params:list, inds:list, ansatz:QuantumCircuit,
     Ansatz optimization pipeline that first runs MomentumBuilder and then optimizes 
     the parameters using Monte Carlo optimization method.
     """
-    observables = [*hamiltonian.paulis, hamiltonian]
-    
+    #previously observing all pauli terms -> causing unnecessary ev calculations
+    #observables = [*hamiltonian.paulis, hamiltonian]
+    #now observing only hamiltonian -> improved performance
+    observables = [hamiltonian]
+
     # Run MomentumBuilder
     # print("Running MomentumBuilder")
     optimized_ansatz = MomentumBuilder.MomentumBuilder(
@@ -87,16 +93,34 @@ def momentum_sa_phased(params:list, inds:list, ansatz:QuantumCircuit,
     
     return optimized_ansatz, optimized_params, energy_final
 
+# Merged / Incorporated Integration
+@overload
 def momentum_sa_merged(params:list, inds:list, ansatz:QuantumCircuit,
                          circuit:QuantumCircuit, hamiltonian:SparsePauliOp,
                          estimator:Estimator, beta1:float, beta2:float,
-                         iters:int=2, optimization_runs:int=100):
+                         iters:int=2, optimization_runs:int=100): ...
+
+@overload
+def momentum_sa_merged(params:list, inds:list, ansatz:QuantumCircuit,
+                         circuit:QuantumCircuit, hamiltonian:SparsePauliOp,
+                         estimator:BackendEstimator, beta1:float, beta2:float,
+                         iters:int=2, optimization_runs:int=100,
+                         pass_manager:PassManager=None, isa_cache=None): ...
+
+def momentum_sa_merged(params:list, inds:list, ansatz:QuantumCircuit,
+                         circuit:QuantumCircuit, hamiltonian:SparsePauliOp,
+                         estimator, beta1:float, beta2:float,
+                         iters:int=2, optimization_runs:int=100,
+                         pass_manager=None, isa_cache=None):
     """
     Ansatz optimization pipeline that constructs every layer using
     momentum and optimizes the layer's parameters using simulated annealing.
     """
     num_qubits = circuit.num_qubits
-    observables = [*hamiltonian.paulis, hamiltonian]
+    #previously observing all pauli terms -> causing unnecessary ev calculations
+    #observables = [*hamiltonian.paulis, hamiltonian]
+    #now observing only hamiltonian -> improved performance
+    observables = [hamiltonian]
     M = np.zeros((len(params))) # Momentum
     currCirc = QuantumCircuit(num_qubits)
     currCirc = currCirc.compose(ansatz)
@@ -105,7 +129,7 @@ def momentum_sa_merged(params:list, inds:list, ansatz:QuantumCircuit,
         # Calculate momentum
         accumulator = []
         for i in range(len(params)):
-            grad_i = abs(gradi(i, params, currCirc, hamiltonian, estimator)).item()
+            grad_i = abs(gradi(i, params, currCirc, hamiltonian, estimator, pass_manager, isa_cache)).item()
             M[i] = beta1 * M[i] + (1-beta1) * grad_i
             heapq.heappush(accumulator, (-M[i], inds[i]))
 
@@ -121,13 +145,13 @@ def momentum_sa_merged(params:list, inds:list, ansatz:QuantumCircuit,
         # Run simulated annealing to optimize params
         simulator = AerSimulator(method='statevector')
         sa_params = MonteCarlo.simulated_annealing(
-            optimization_runs, np.array(params), currCirc, simulator, observables, estimator
+            optimization_runs, np.array(params), currCirc, simulator, observables, estimator, pass_manager, isa_cache
         )
         params = list(sa_params)
         # print(sa_params)
 
     circuit = circuit.compose(ansatz)
-    cost_final = cost_func(params, circuit, observables, estimator)
+    cost_final = cost_func(params, circuit, observables, estimator, pass_manager, isa_cache)
     energy_final = cost_final[-1] # Last element in the list is the energy
     print("Energy after merged MB and SA: ", energy_final)
     
