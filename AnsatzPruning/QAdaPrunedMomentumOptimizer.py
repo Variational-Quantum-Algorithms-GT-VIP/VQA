@@ -23,7 +23,7 @@ from QAdaPrune import QAdaPruner, QAdaPrunedCircuit, calculate_parameter_gradien
 class OptimizationConfig:
     """Configuration for QAdaPrune optimization"""
     max_layers: int = 5
-    pruning_threshold: float = 0.01
+    pruning_threshold: float = 0.1
     momentum_beta1: float = 0.9
     momentum_beta2: float = 0.99
     pruning_window_size: int = 5
@@ -333,7 +333,7 @@ def compare_ansatze(base_circuit: QuantumCircuit,
         # QAdaPrune + Momentum
         config = OptimizationConfig(
             max_layers=5,
-            pruning_threshold=0.00,
+            pruning_threshold=0.1,
             optimization_method='cobyla'
         )
         optimizer = QAdaPrunedMomentumOptimizer(
