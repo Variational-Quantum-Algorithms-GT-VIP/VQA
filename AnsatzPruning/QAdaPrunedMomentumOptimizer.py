@@ -4,26 +4,26 @@ Combines QAdaPrune parameter pruning with Momentum-based layer addition and Mont
 """
 
 import numpy as np
-import heapq
 import time
 from typing import Tuple, List, Optional, Dict
 from dataclasses import dataclass
 
 from qiskit import QuantumCircuit
-from qiskit.circuit import ParameterVector, Parameter
 from qiskit.quantum_info import SparsePauliOp
-from qiskit.primitives import StatevectorEstimator as Estimator
+from qiskit.primitives import StatevectorEstimator as Estimator, BackendEstimatorV2
 from scipy.optimize import minimize, differential_evolution
-from qiskit_aer.aerprovider import AerSimulator
+from Utilities import cost_func as utilities_cost_func
 
 from QAdaPrune import QAdaPruner, QAdaPrunedCircuit, calculate_parameter_gradients
+
+from typing import overload
 
 
 @dataclass
 class OptimizationConfig:
     """Configuration for QAdaPrune optimization"""
     max_layers: int = 5
-    pruning_threshold: float = 0.1
+    pruning_threshold: float = 0.05
     momentum_beta1: float = 0.9
     momentum_beta2: float = 0.99
     pruning_window_size: int = 5
@@ -71,9 +71,21 @@ class QAdaPrunedMomentumOptimizer:
     """
     Main optimizer combining QAdaPrune with Momentum-based layer addition.
     """
-    
+
+    @overload
     def __init__(self, circuit: QuantumCircuit, hamiltonian: SparsePauliOp,
                  estimator: Estimator, config: OptimizationConfig = None):
+        ...
+
+    @overload
+    def __init__(self, circuit: QuantumCircuit, hamiltonian: SparsePauliOp,
+                 estimator: BackendEstimatorV2, config: OptimizationConfig = None,
+                 pass_manager=None, isa_cache=None):
+        ...
+
+    def __init__(self, circuit: QuantumCircuit, hamiltonian: SparsePauliOp,
+                 estimator: Estimator | BackendEstimatorV2, config: OptimizationConfig = None,
+                 pass_manager=None, isa_cache=None):
         """
         Args:
             circuit: Base quantum circuit (usually just qubits)
@@ -85,10 +97,12 @@ class QAdaPrunedMomentumOptimizer:
         self.hamiltonian = hamiltonian
         self.estimator = estimator
         self.config = config or OptimizationConfig()
-        
+        self.pass_manager = pass_manager
+        self.isa_cache = isa_cache
+
         self.num_qubits = circuit.num_qubits
         self.observables = [*hamiltonian.paulis, hamiltonian]
-        
+
         # Initialize pruner and momentum tracker
         self.pruner = QAdaPruner(
             num_qubits=self.num_qubits,
@@ -96,18 +110,18 @@ class QAdaPrunedMomentumOptimizer:
             window_size=self.config.pruning_window_size,
             patience=self.config.patience
         )
-        
+
         self.momentum_tracker = MomentumTracker(
             num_qubits=self.num_qubits,
             beta1=self.config.momentum_beta1
         )
-        
+
         # Circuit tracking
         self.pruned_circuit = QAdaPrunedCircuit(circuit, self.pruner)
         self.full_params = np.array([], dtype=float)
         self.active_mask = np.array([], dtype=bool)
         self.layer_count = 0
-        
+
         # Statistics
         self.history = {
             'costs': [],
@@ -130,9 +144,13 @@ class QAdaPrunedMomentumOptimizer:
         if len(active_vals) == 0:
             return 0.0
         pub = (self.pruned_circuit.full_circuit, self.hamiltonian, self._expand(active_vals))
-        cost = self.estimator.run([pub]).result()[0].data.evs
+
+        cost = utilities_cost_func(self.full_params, self.pruned_circuit.full_circuit, self.hamiltonian,
+                                   self.estimator, self.pass_manager, self.isa_cache)
+        if hasattr(cost, "__len__") or isinstance(cost, np.ndarray):
+            return float(np.ravel(cost)[-1])
         return float(cost)
-    
+
     def _optimize_layer_params(self, initial_params: np.ndarray,
                                max_iterations: int = None) -> np.ndarray:
         """Optimize parameters for current layer"""
@@ -311,6 +329,13 @@ class QAdaPrunedMomentumOptimizer:
         
         return results
 
+@overload
+def compare_ansatze(base_circuit: QuantumCircuit,
+                    hamiltonian: SparsePauliOp,
+                    estimator: BackendEstimatorV2,
+                    num_runs: int = 5,
+                    pass_manager = None,
+                    isa_cache = None) -> Dict: ...
 
 def compare_ansatze(base_circuit: QuantumCircuit,
                     hamiltonian: SparsePauliOp,
@@ -333,7 +358,7 @@ def compare_ansatze(base_circuit: QuantumCircuit,
         # QAdaPrune + Momentum
         config = OptimizationConfig(
             max_layers=5,
-            pruning_threshold=0.1,
+            pruning_threshold=0.05,
             optimization_method='cobyla'
         )
         optimizer = QAdaPrunedMomentumOptimizer(
