@@ -56,7 +56,7 @@ class QAdaPruner:
     Tracks parameter importance and prunes parameters with low impact on cost function.
     """
 
-    def __init__(self, num_qubits: int, pruning_threshold: float = 0.05,
+    def __init__(self, num_qubits: int, pruning_threshold: float = 0.1,
                  window_size: int = 5, patience: int = 3):
         """
         Args:
