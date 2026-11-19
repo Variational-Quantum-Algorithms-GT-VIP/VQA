@@ -154,6 +154,7 @@ def run_adapt_vqe(
     gradient_threshold: float = 1e-5,
     eigenvalue_threshold: float = 1e-8,
     optimizer_maxiter: int = 500,
+    estimator = None,
 ):
     """
     Run Qiskit's ADAPT-VQE against a Hamiltonian using an explicit operator pool.
@@ -167,6 +168,7 @@ def run_adapt_vqe(
         gradient_threshold: ADAPT convergence threshold on the maximum gradient.
         eigenvalue_threshold: ADAPT convergence threshold on eigenvalue change.
         optimizer_maxiter: maximum iterations for the inner SLSQP solve.
+        estimator: StatevectorEstimator() if none else takes BackendEstimatorV2
     """
     ensure_qiskit_algorithms_available()
 
@@ -175,8 +177,8 @@ def run_adapt_vqe(
         initial_state = build_reference_state(num_qubits)
     if operator_pool is None:
         operator_pool = build_operator_pool(num_qubits)
-
-    estimator = StatevectorEstimator()
+    if estimator is None:
+        estimator = StatevectorEstimator()
     optimizer = SLSQP(maxiter=optimizer_maxiter)
 
     # The solver ansatz is intentionally trivial because ADAPT-VQE constructs
