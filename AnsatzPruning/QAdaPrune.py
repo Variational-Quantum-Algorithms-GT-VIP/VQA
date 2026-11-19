@@ -8,18 +8,16 @@ Github link: https://github.com/aicaffeinelife/QAdaPrune
 """
 
 import numpy as np
-import heapq
 from dataclasses import dataclass
 from typing import List, Tuple, Dict, Optional
-from qiskit.circuit import QuantumCircuit, ParameterVector, Parameter
+from qiskit.circuit import QuantumCircuit, Parameter
 from qiskit.quantum_info import SparsePauliOp
-from qiskit.primitives import BackendEstimatorV2 as BackendEstimator
 from qiskit.primitives import StatevectorEstimator as Estimator
-from qiskit.transpiler import StagedPassManager as PassManager
-from scipy.optimize import minimize
-from typing import overload
+from qiskit.transpiler import StagedPassManager
 
 from Utilities import to_isa_pub
+
+from typing import overload
 
 
 @dataclass
@@ -58,7 +56,7 @@ class QAdaPruner:
     Tracks parameter importance and prunes parameters with low impact on cost function.
     """
 
-    def __init__(self, num_qubits: int, pruning_threshold: float = 0.01,
+    def __init__(self, num_qubits: int, pruning_threshold: float = 0.1,
                  window_size: int = 5, patience: int = 3):
         """
         Args:
@@ -302,12 +300,15 @@ class QAdaPrunedCircuit:
 
 
 @overload
-def calculate_parameter_gradients(params: np.ndarray,
+def calculate_parameter_gradients(pass_manager: StagedPassManager,
+                                  isa_cache: dict,
+                                  params: np.ndarray,
                                   circuit: QuantumCircuit,
                                   hamiltonian: SparsePauliOp,
                                   estimator: Estimator,
                                   active_mask: np.ndarray,
-                                  delta: float = np.pi / 2) -> np.ndarray:
+                                  delta: float = np.pi / 2,
+                                  ) -> np.ndarray:
     """
     Calculate gradients for all parameters using parameter shift rule.
 
@@ -317,6 +318,7 @@ def calculate_parameter_gradients(params: np.ndarray,
         hamiltonian: Hamiltonian to minimize
         estimator: StatevectorEstimator | BackendEstimatorV2 for expectation values
         delta: Shift amount for parameter-shift rule
+        active_mask: Boolean mask for active parameters
         pass_manager: StagedPassManager (for BackendEstimatorV2 only)
         isa_cache: dict (for BackendEstimatorV2 only)
 
@@ -344,6 +346,56 @@ def calculate_parameter_gradients(params: np.ndarray,
         else:
             pub_plus = to_isa_pub(circuit, hamiltonian, params_plus, pass_manager, isa_cache)
             pub_minus = to_isa_pub(circuit, hamiltonian, params_minus, pass_manager, isa_cache)
+
+        try:
+            cost_plus = estimator.run([pub_plus]).result()[0].data.evs[-1]
+            cost_minus = estimator.run([pub_minus]).result()[0].data.evs[-1]
+        except:
+            cost_plus = float(estimator.run([pub_plus]).result()[0].data.evs)
+            cost_minus = float(estimator.run([pub_minus]).result()[0].data.evs)
+
+        gradients[i] = (cost_plus - cost_minus) / (2 * delta)
+
+    return gradients
+
+def calculate_parameter_gradients(params: np.ndarray,
+                                  circuit: QuantumCircuit,
+                                  hamiltonian: SparsePauliOp,
+                                  estimator: Estimator,
+                                  active_mask: np.ndarray,
+                                  delta: float = np.pi / 2) -> np.ndarray:
+    """
+    Calculate gradients for all parameters using parameter shift rule.
+
+    Args:
+        params: Current parameter values
+        circuit: Quantum circuit
+        hamiltonian: Hamiltonian to minimize
+        estimator: Estimator for expectation values
+        delta: Shift amount for parameter-shift rule
+        active_mask: Boolean mask for active parameters
+
+
+    Returns:
+        Gradient vector
+    """
+    gradients = np.zeros_like(params)
+
+    for i in range(len(params)):
+        if not active_mask[i]:
+            continue
+
+        # Forward shift
+        params_plus = params.copy()
+        params_plus[i] += delta
+
+        # Backward shift
+        params_minus = params.copy()
+        params_minus[i] -= delta
+
+        # Compute expectations
+        pub_plus = (circuit, hamiltonian, params_plus)
+        pub_minus = (circuit, hamiltonian, params_minus)
 
         try:
             cost_plus = estimator.run([pub_plus]).result()[0].data.evs[-1]

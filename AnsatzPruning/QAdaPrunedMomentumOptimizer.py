@@ -4,18 +4,14 @@ Combines QAdaPrune parameter pruning with Momentum-based layer addition and Mont
 """
 
 import numpy as np
-import heapq
 import time
 from typing import Tuple, List, Optional, Dict, overload
 from dataclasses import dataclass
 
 from qiskit import QuantumCircuit
-from qiskit.circuit import ParameterVector, Parameter
 from qiskit.quantum_info import SparsePauliOp
-from qiskit.primitives import StatevectorEstimator as Estimator
-from qiskit.primitives import BackendEstimatorV2
+from qiskit.primitives import StatevectorEstimator as Estimator, BackendEstimatorV2
 from scipy.optimize import minimize, differential_evolution
-from qiskit_aer.aerprovider import AerSimulator
 
 from Utilities import cost_func as utilities_cost_func
 from QAdaPrune import QAdaPruner, QAdaPrunedCircuit, calculate_parameter_gradients
@@ -76,16 +72,18 @@ class QAdaPrunedMomentumOptimizer:
 
     @overload
     def __init__(self, circuit: QuantumCircuit, hamiltonian: SparsePauliOp,
-                estimator: Estimator, config: OptimizationConfig = None): ...
+                 estimator: Estimator, config: OptimizationConfig = None):
+        ...
 
     @overload
     def __init__(self, circuit: QuantumCircuit, hamiltonian: SparsePauliOp,
                  estimator: BackendEstimatorV2, config: OptimizationConfig = None,
-                 pass_manager = None, isa_cache = None): ...
-    
+                 pass_manager=None, isa_cache=None):
+        ...
+
     def __init__(self, circuit: QuantumCircuit, hamiltonian: SparsePauliOp,
                  estimator: Estimator | BackendEstimatorV2, config: OptimizationConfig = None,
-                 pass_manager = None, isa_cache = None):
+                 pass_manager=None, isa_cache=None):
         """
         Args:
             circuit: Base quantum circuit (usually just qubits)
@@ -99,7 +97,7 @@ class QAdaPrunedMomentumOptimizer:
         self.config = config or OptimizationConfig()
         self.pass_manager = pass_manager
         self.isa_cache = isa_cache
-        
+
         self.num_qubits = circuit.num_qubits
         self.observables = [*hamiltonian.paulis, hamiltonian]
         
@@ -144,7 +142,11 @@ class QAdaPrunedMomentumOptimizer:
         if len(active_vals) == 0:
             return 0.0
         pub = (self.pruned_circuit.full_circuit, self.hamiltonian, self._expand(active_vals))
-        cost = self.estimator.run([pub]).result()[0].data.evs
+
+        cost = utilities_cost_func(self.full_params, self.pruned_circuit.full_circuit, self.hamiltonian,
+                                   self.estimator, self.pass_manager, self.isa_cache)
+        if hasattr(cost, "__len__") or isinstance(cost, np.ndarray):
+            return float(np.ravel(cost)[-1])
         return float(cost)
     
     def _optimize_layer_params(self, initial_params: np.ndarray,
@@ -324,7 +326,6 @@ class QAdaPrunedMomentumOptimizer:
             print("=" * 60)
         
         return results
-
 
 @overload
 def compare_ansatze(base_circuit: QuantumCircuit,

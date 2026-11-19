@@ -4,11 +4,21 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bfe9e2d2-e380-4d53-be01-92c33e49259d" name="Changes" comment="generated other file of sparse pauli ops" />
+    <list default="true" id="bfe9e2d2-e380-4d53-be01-92c33e49259d" name="Changes" comment="Merge remote-tracking branch 'origin/maxcut' into maxcut&#10;&#10;# Conflicts:&#10;#&#9;AnsatzPruning/QAdaPrune.py&#10;#&#9;AnsatzPruning/QAdaPrunedMomentumOptimizer.py&#10;#&#9;AnsatzPruning/Utilities.py">
+      <change beforePath="$PROJECT_DIR$/.idea/Quantum-State-PreparationS25.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Quantum-State-PreparationS25.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AnsatzPruning/MaxCut_Benchmarking.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/AnsatzPruning/MaxCut_Benchmarking.ipynb" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ChangesViewManager">
+    <option name="groupingKeys">
+      <option value="directory" />
+      <option value="repository" />
+    </option>
   </component>
   <component name="Git.Settings">
     <excluded-from-favorite>
@@ -26,11 +36,23 @@
     </excluded-from-favorite>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="StephenLinderBranch" />
+        <entry key="$PROJECT_DIR$" value="main" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;ThudSoundEffect&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Variational-Quantum-Algorithms-GT-VIP/VQA&quot;,
+    &quot;accountId&quot;: &quot;c88abe9a-db0e-4431-b099-7f3b9b35017b&quot;
+  }
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 8
 }</component>
@@ -42,28 +64,34 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "Python.AnsatzBuilder.executor": "Run",
-    "Python.LayerGA.executor": "Run",
-    "Python.OptimizerTest.executor": "Run",
-    "Python.PCA_SVMClassification.executor": "Run",
-    "Python.PruningTest.executor": "Run",
-    "Python.SimulatedAnnealing.executor": "Run",
-    "Python.TwoQubitPCA.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "project.propVCSSupport.Mappings",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;Python.AnsatzBuilder.executor&quot;: &quot;Run&quot;,
+    &quot;Python.LayerGA.executor&quot;: &quot;Run&quot;,
+    &quot;Python.OptimizerTest.executor&quot;: &quot;Run&quot;,
+    &quot;Python.PCA_SVMClassification.executor&quot;: &quot;Run&quot;,
+    &quot;Python.PruningTest.executor&quot;: &quot;Run&quot;,
+    &quot;Python.SimulatedAnnealing.executor&quot;: &quot;Run&quot;,
+    &quot;Python.TwoQubitPCA.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;maxcut&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/dylan/Projects/VQA&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;configurable.group.Jupyter Settings&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/QGA" />
@@ -83,7 +111,9 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="DEBUG_JUST_MY_CODE" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="RUN_TOOL" value="" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/QGA/LayerGA.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -102,8 +132,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-1d06a55b98c1-91d5c284f522-JavaScript-PY-241.15989.155" />
-        <option value="bundled-python-sdk-babbdf50b680-7c6932dee5e4-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-241.15989.155" />
+        <option value="bundled-python-sdk-245168a56dbd-c2ffad84badb-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-261.25134.203" />
       </set>
     </attachedChunks>
   </component>
@@ -125,6 +154,65 @@
       <workItem from="1742942122801" duration="1708000" />
       <workItem from="1744151878563" duration="2648000" />
       <workItem from="1744682214339" duration="1633000" />
+      <workItem from="1789096338199" duration="161000" />
+      <workItem from="1789096605784" duration="772000" />
+      <workItem from="1789097417976" duration="2418000" />
+      <workItem from="1789154844048" duration="464000" />
+      <workItem from="1789160893558" duration="645000" />
+      <workItem from="1789182655091" duration="3473000" />
+      <workItem from="1789262222098" duration="3000" />
+      <workItem from="1789273596564" duration="1033000" />
+      <workItem from="1789434750389" duration="173000" />
+      <workItem from="1789444622043" duration="686000" />
+      <workItem from="1789483982464" duration="627000" />
+      <workItem from="1789485080149" duration="108000" />
+      <workItem from="1789485436911" duration="243000" />
+      <workItem from="1789492157400" duration="2141000" />
+      <workItem from="1789495206412" duration="555000" />
+      <workItem from="1789516666322" duration="5048000" />
+      <workItem from="1789522066684" duration="548000" />
+      <workItem from="1789523139308" duration="1514000" />
+      <workItem from="1789598005148" duration="2677000" />
+      <workItem from="1790203090855" duration="1836000" />
+      <workItem from="1790296451139" duration="2000" />
+      <workItem from="1790455012509" duration="5000" />
+      <workItem from="1790740129903" duration="2167000" />
+      <workItem from="1790809095500" duration="192000" />
+      <workItem from="1790998211292" duration="809000" />
+      <workItem from="1791085640166" duration="892000" />
+      <workItem from="1791174275445" duration="134000" />
+      <workItem from="1791174421422" duration="646000" />
+      <workItem from="1791258174511" duration="785000" />
+      <workItem from="1791298867910" duration="338000" />
+      <workItem from="1791299236479" duration="145000" />
+      <workItem from="1791299405381" duration="27000" />
+      <workItem from="1791319682684" duration="785000" />
+      <workItem from="1792018107541" duration="1802000" />
+      <workItem from="1792621953600" duration="5000" />
+      <workItem from="1792622073947" duration="593000" />
+      <workItem from="1792800782133" duration="5000" />
+      <workItem from="1792973430235" duration="1000" />
+      <workItem from="1793154563145" duration="2019000" />
+      <workItem from="1793226714682" duration="1377000" />
+      <workItem from="1793228380896" duration="587000" />
+      <workItem from="1793229034502" duration="411000" />
+      <workItem from="1793835159942" duration="2502000" />
+      <workItem from="1793944401724" duration="922000" />
+      <workItem from="1794025475048" duration="1897000" />
+      <workItem from="1794443102340" duration="6385000" />
+      <workItem from="1794450710260" duration="182000" />
+      <workItem from="1794459357132" duration="665000" />
+      <workItem from="1794498757662" duration="337000" />
+      <workItem from="1794634046976" duration="1283000" />
+      <workItem from="1794666595217" duration="75000" />
+      <workItem from="1794670667991" duration="3224000" />
+      <workItem from="1794719101149" duration="664000" />
+      <workItem from="1794783150905" duration="344000" />
+      <workItem from="1794890140948" duration="697000" />
+      <workItem from="1794974942391" duration="313000" />
+      <workItem from="1795044919064" duration="2352000" />
+      <workItem from="1795047404384" duration="342000" />
+      <workItem from="1795048989865" duration="4097000" />
     </task>
     <task id="LOCAL-00001" summary="Added optimization on a layer basis">
       <option name="closed" value="true" />
@@ -182,7 +270,79 @@
       <option name="project" value="LOCAL" />
       <updated>1744683243755</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Add AdaptVQE transpiling and checkpoints for benchmarking">
+      <option name="closed" value="true" />
+      <created>1789097003029</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1789097003029</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Update circuit queue">
+      <option name="closed" value="true" />
+      <created>1790203145372</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1790203145372</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Add QAdaPrune runner methods for benchmarking">
+      <option name="closed" value="true" />
+      <created>1793156576750</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1793156576750</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Update QAdaPrune gradient calculation">
+      <option name="closed" value="true" />
+      <created>1794450763513</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1794450763513</updated>
+    </task>
+    <task id="LOCAL-00012" summary="Update QAdaPrune gradient calculation">
+      <option name="closed" value="true" />
+      <created>1794499006252</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1794499006252</updated>
+    </task>
+    <task id="LOCAL-00013" summary="Change id mapping to parameter masking to prevent dimension mismatches">
+      <option name="closed" value="true" />
+      <created>1794673820509</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1794673820509</updated>
+    </task>
+    <task id="LOCAL-00014" summary="Change id mapping to parameter masking to prevent dimension mismatches">
+      <option name="closed" value="true" />
+      <created>1795045221347</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1795045221348</updated>
+    </task>
+    <task id="LOCAL-00015" summary="Fix overloading mismatches">
+      <option name="closed" value="true" />
+      <created>1795052092826</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1795052092827</updated>
+    </task>
+    <task id="LOCAL-00016" summary="Merge remote-tracking branch 'origin/maxcut' into maxcut&#10;&#10;# Conflicts:&#10;#&#9;AnsatzPruning/QAdaPrune.py&#10;#&#9;AnsatzPruning/QAdaPrunedMomentumOptimizer.py&#10;#&#9;AnsatzPruning/Utilities.py">
+      <option name="closed" value="true" />
+      <created>1795052698208</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1795052698208</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -207,7 +367,15 @@
     <MESSAGE value="added hamiltonian generator" />
     <MESSAGE value="generated text file" />
     <MESSAGE value="generated other file of sparse pauli ops" />
-    <option name="LAST_COMMIT_MESSAGE" value="generated other file of sparse pauli ops" />
+    <MESSAGE value="Add AdaptVQE transpiling and checkpoints for benchmarking" />
+    <MESSAGE value="Update circuit queue" />
+    <MESSAGE value="Add QAdaPrune runner methods for benchmarking" />
+    <MESSAGE value="Rever t" />
+    <MESSAGE value="Update QAdaPrune gradient calculation" />
+    <MESSAGE value="Change id mapping to parameter masking to prevent dimension mismatches" />
+    <MESSAGE value="Fix overloading mismatches" />
+    <MESSAGE value="Merge remote-tracking branch 'origin/maxcut' into maxcut&#10;&#10;# Conflicts:&#10;#&#9;AnsatzPruning/QAdaPrune.py&#10;#&#9;AnsatzPruning/QAdaPrunedMomentumOptimizer.py&#10;#&#9;AnsatzPruning/Utilities.py" />
+    <option name="LAST_COMMIT_MESSAGE" value="Merge remote-tracking branch 'origin/maxcut' into maxcut&#10;&#10;# Conflicts:&#10;#&#9;AnsatzPruning/QAdaPrune.py&#10;#&#9;AnsatzPruning/QAdaPrunedMomentumOptimizer.py&#10;#&#9;AnsatzPruning/Utilities.py" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
